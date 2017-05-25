@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8"/>
+    <title>Galaxy Wars</title>
+    <!-- Babylon.js -->
+    <script src="hand.minified-1.2.js"></script>
+    <script src="cannon.js"></script>
+    <script src="oimo.js"></script>
+    <script src="babylon.js"></script>
+    <script src="babylon.canvas2d.js"></script> 
+
+    <!-- Game Files -->
+    <script src="game.js"></script>
+    <script src="levels.js"></script>
+    <script src="dynamics.js"></script>
+
+
+    <style>
+    	html, body {
+	        overflow: hidden;
+	        width   : 100%;
+	        height  : 100%;
+	        margin  : 0;
+	        padding : 0;
+	    }
+
+	    #renderCanvas {
+	        width   : 100%;
+	        height  : 100%;
+	        touch-action: none;
+	    }
+    </style>
+</head>
+<body>
+<div id="canvasZone">
+    <canvas id="renderCanvas"></canvas>
+</div>
+    <script>
+	    window.addEventListener('DOMContentLoaded', function() {
+	        // get the canvas object
+	        var canvas = document.getElementById('renderCanvas');
+
+	        // load babylon engine
+	        var engine = new BABYLON.Engine(canvas, true);
+
+	        // scene holder
+	        scene = 0;
+
+	        var createScene = function() {
+		    	// create a basic BJS Scene object
+	    		scene = new BABYLON.Scene(engine);
+
+	    		// create a FreeCamera, and set its position to (x:0, y:5, z:-10)
+	    		var camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 0, -10), scene);
+
+	    		// target the camera to scene origin
+	    		camera.setTarget(BABYLON.Vector3.Zero());
+
+	    		// create a basic light, aiming 0,1,0 - meaning, to the sky
+			    var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0,1,0), scene);
+
+			    // return the scene
+	    		return scene;
+		    };
+
+		    // create the game scene
+	        scene = createScene();
+
+	        // initialize the game
+	        init();
+
+	        // entry screen
+		    var entry = startScreen();
+
+		    // register keypress action for escaping entry
+	        window.addEventListener("keydown", escapeEntry);
+
+		    var t = 0;
+		    var startTimer = setInterval(function() {
+		        entry.position.y += 2;
+		        t += 100;
+		        if (t == 60000) {
+		        	startGame();
+		        }
+
+		    }, 100);
+
+	        engine.runRenderLoop(function() {
+			    scene.render();
+			});
+
+			window.addEventListener('resize', function() {
+			    engine.resize();
+			});
+
+			function escapeEntry(event) {
+				console.log(event.keyCode)
+				if (event.keyCode == 27)
+					startGame();
+			}
+
+			function startGame() {
+				// remove entry screen
+				entry.dispose();
+
+	        	// create the player
+	        	createPlayer();
+
+	        	// create level one
+        		createLevel(0);
+
+        		// remove escape entry handler
+        		window.removeEventListener("keydown", escapeEntry);
+
+        		// register keydown
+				window.addEventListener("keydown", stopFighter);        		
+
+        		// player movement
+				scene.beforeRender = function () {
+					movePlayerSprite();
+			    }
+
+        		// remove the entry screen timer
+        		clearInterval(startTimer);
+			}
+
+	    });
+	    
+	</script>
+</body>
+</html>
